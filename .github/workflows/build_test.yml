@@ -1,0 +1,77 @@
+name: Build and test various configurations
+
+on:
+  push:
+    branches: [ "main", "develop" ]
+  pull_request:
+    branches: [ main, "develop" ]
+
+jobs:
+  build:
+    name: Build presets
+    runs-on: ubuntu-latest
+    outputs:
+      presets: ${{ steps.set-presets.outputs.presets }}
+    timeout-minutes: 5
+    env:
+      CPM_SOURCE_CACHE: ${{ github.workspace }}/.cpmcache
+    steps:
+      - id: set-presets
+        run: echo "presets=stm32cube bitfilled bitfilled-bitband" >> $GITHUB_OUTPUT
+
+      - name: Git checkout
+        uses: actions/checkout@v4
+
+      - name: Install ARM GCC toolchain
+        run: |
+          sudo apt update
+          sudo apt install -y gcc-arm-none-eabi
+
+      - name: Configure and Build
+        run: |
+          for preset in ${{ steps.set-presets.outputs.presets }}; do
+            cmake -B build/$preset --preset $preset
+            cmake --build build/$preset
+          done
+
+      - name: Upload final build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: BuildPackage
+          retention-days: 1
+          path: |
+            test/test_button_led.robot
+            build/*/bitfilled-stm32f4.elf
+
+  run-tests:
+    name: Run Robot Framework tests
+    needs: build
+    runs-on: ubuntu-latest
+    container:
+      image: antmicro/renode:latest
+      options: --user root
+
+    timeout-minutes: 5
+    steps:
+      - name: Download build files
+        id: download-package
+        uses: actions/download-artifact@v4
+        with:
+          name: BuildPackage
+
+      - name: run tests
+        run:  |
+          for preset in ${{ needs.build.outputs.presets }}; do
+            renode-test test/test_button_led.robot --variable BUILD_NAME:$preset || true
+            mv log.html log-$preset.html
+            mv report.html report-$preset.html
+          done
+
+      - name: upload results
+        uses: actions/upload-artifact@v4
+        with:
+          name: TestResults
+          retention-days: 1
+          path: |
+            log*.html
+            report*.html

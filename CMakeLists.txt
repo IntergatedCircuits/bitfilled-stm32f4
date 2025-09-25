@@ -21,7 +21,7 @@ project(${CMAKE_PROJECT_NAME}
 message("Build type: " ${CMAKE_BUILD_TYPE})
 
 include(cmake/get_cpm.cmake)
-CPMAddPackage("gh:IntergatedCircuits/bitfilled#c5f625b3bc83d3da2aaadd5be343d69b253a2c38")
+CPMAddPackage("gh:IntergatedCircuits/bitfilled#a87d36303f8d023d201c3972dfb54b17963a44f0")
 execute_process(
     COMMAND ${CMAKE_COMMAND} -E create_symlink ${CPM_PACKAGE_bitfilled_SOURCE_DIR}/.clang-format ${CMAKE_SOURCE_DIR}/.clang-format
 )
@@ -49,8 +49,8 @@ add_executable(${CMAKE_PROJECT_NAME}
 # Add STM32CubeMX generated sources
 add_subdirectory(cmake/stm32cubemx)
 
-set(BITFILLED_SOLUTION 1)
-set(USE_BIT_BAND 0)
+option(BITFILLED_SOLUTION "Use bitfilled" 1)
+option(USE_BIT_BAND "Use bitfilled bit-band" 0)
 
 target_compile_definitions(${CMAKE_PROJECT_NAME} PUBLIC
     RESET_TO_MAIN # to disable this, the linker script also needs to be restored: ENTRY(Reset_Handler), and uncomment sections

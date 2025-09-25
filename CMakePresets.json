@@ -37,6 +37,29 @@
             "cacheVariables": {
                 "CMAKE_BUILD_TYPE": "MinSizeRel"
             }
+        },
+        {
+            "name": "stm32cube",
+            "inherits": "Release",
+            "cacheVariables": {
+                "BITFILLED_SOLUTION": "0"
+            }
+        },
+        {
+            "name": "bitfilled",
+            "inherits": "Release",
+            "cacheVariables": {
+                "BITFILLED_SOLUTION": "1",
+                "USE_BIT_BAND": "0"
+            }
+        },
+        {
+            "name": "bitfilled-bitband",
+            "inherits": "Release",
+            "cacheVariables": {
+                "BITFILLED_SOLUTION": "1",
+                "USE_BIT_BAND": "1"
+            }
         }
     ],
     "buildPresets": [
